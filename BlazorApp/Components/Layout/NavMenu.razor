@@ -1,0 +1,311 @@
+﻿@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+@using System.Linq;
+
+<style>
+    body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.leftnav-container {
+    border-top: 1px black solid;
+    border-left: 1px black solid;
+    border-right: 1px black solid;
+}
+
+.leftnav-item {
+    border-bottom: 1px black solid;
+}
+
+.leftnav-item-label {
+    padding-left: 10px;
+    font-size: 18px;
+    background-color: beige;
+}
+
+.leftnav-sub-item {
+    border-bottom: none;
+    height: 0px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.active-sub {
+    color: black;
+    background-color: #FEC673;
+    height: 20px;
+    border-bottom: 1px black solid;
+}
+
+.sibling-of-active-sub {
+    color: black;
+    background-color: white;
+    height: 20px;
+    border-bottom: 1px black solid;
+}
+
+@@keyframes subexpand {
+    0% {
+        height: 0px;
+        border-bottom: none;
+    }
+
+    25% {
+        height: 5px;
+    }
+
+    50% {
+        height: 10px;
+    }
+
+    75% {
+        height: 15px;
+    }
+
+    100% {
+        height: 20px;
+        border-bottom: 1px black solid;
+    }
+}
+
+.expanded-sub {
+    animation-name: subexpand;
+    animation-duration: 0.25s;
+    animation-fill-mode: forwards;
+}
+
+@@keyframes subcollapse {
+    0% {
+        height: 20px;
+        border-bottom: 1px black solid;
+    }
+
+    25% {
+        height: 15px;
+    }
+
+    50% {
+        height: 10px;
+    }
+
+    75% {
+        height: 5px;
+    }
+
+    100% {
+        height: 0px;
+        border-bottom: none;
+    }
+}
+
+.collapsed-sub {
+    animation-name: subcollapse;
+    animation-duration: 0.25s;
+    animation-fill-mode: forwards;
+}
+
+.leftnav-sub-item-label {
+    padding-left: 35px;
+    font-size: 14px;
+}
+
+@@keyframes arrowturn {
+    0% {
+        --fa-rotate-angle: 0deg;
+    }
+
+    25% {
+        --fa-rotate-angle: 23deg;
+    }
+
+    50% {
+        --fa-rotate-angle: 45deg;
+    }
+
+    75% {
+        --fa-rotate-angle: 67deg;
+    }
+
+    100% {
+        --fa-rotate-angle: 90deg;
+    }
+}
+
+.expanded-arrow {
+    animation-name: arrowturn;
+    animation-duration: 0.25s;
+    animation-fill-mode: forwards;
+}
+
+@@keyframes arrowrevert {
+    0% {
+        --fa-rotate-angle: 90deg;
+    }
+
+    25% {
+        --fa-rotate-angle: 67deg;
+    }
+
+    50% {
+        --fa-rotate-angle: 45deg;
+    }
+
+    75% {
+        --fa-rotate-angle: 23deg;
+    }
+
+    100% {
+        --fa-rotate-angle: 0deg;
+    }
+}
+
+.collapsed-arrow {
+    animation-name: arrowrevert;
+    animation-duration: 0.25s;
+    animation-fill-mode: forwards;
+}
+
+.parent-of-active-arrow {
+    --fa-rotate-angle: 90deg;
+}
+</style>
+
+<div class="leftnav-container">
+
+    @foreach (NavItem item in NavItems)
+    {
+        <div class="leftnav-item-container">
+            
+            <div class="leftnav-item" id="leftnav-parent-@item.Id" @onclick="() => ToggleNav(item.Id)">
+                <div class="leftnav-item-label">
+                    <span class="@item.ClassName" id="item-@item.Id-arrow"></span> @item.Label
+                </div>
+            </div>
+
+            <div class="leftnav-sub-item-container">
+
+                @foreach (SubNavItem child in item.Children)
+                {
+                    <div class="@child.ClassName">
+                        <a href="@child.LinkTo">
+                            <div class="leftnav-sub-item-label">
+                                @child.Label
+                            </div>
+                        </a>
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    public const string parentClassBase = "fa-solid fa-arrow-right fa-rotate-by";
+    public const string parentClassCollapsed = "fa-solid fa-arrow-right fa-rotate-by collapsed-arrow";
+    public const string parentClassExpanded = "fa-solid fa-arrow-right fa-rotate-by expanded-arrow";
+    public const string parentClassParentOfActive = "fa-solid fa-arrow-right fa-rotate-by parent-of-active-arrow";
+    public const string childClassBase = "leftnav-sub-item";
+    public const string childClassCollapsed = "leftnav-sub-item collapsed-sub";
+    public const string childClassExpanded = "leftnav-sub-item expanded-sub";
+    public const string childClassActive = "leftnav-sub-item active-sub";
+    public const string childClassSiblingOfActive = "leftnav-sub-item sibling-of-active-sub";
+
+    public List<NavSpec> NavSpecs = new List<NavSpec>
+    {
+        new NavSpec
+        {
+            Label = "Touhou Project",
+            Folder = "/touhou/",
+            Children = new List<SubNavSpec>
+            {
+                new SubNavSpec { Label = "Fairy Ring", Folder = "/touhou/fairy/" },
+                new SubNavSpec { Label = "Autumn Children", Folder = "/touhou/autumn/" },
+                new SubNavSpec { Label = "Use Your Illusion", Folder = "/touhou/illusion/" }
+            }
+        },
+        new NavSpec
+        {
+            Label = "Magic the Gathering",
+            Folder = "/magic/",
+            Children = new List<SubNavSpec>
+            {
+                new SubNavSpec { Label = "Lotus Cobra is Evil", Folder = "/magic/cobra/" }
+            }
+        }
+    };
+
+    public List<NavItem>? NavItems;
+
+    protected override void OnInitialized()
+    {
+        var currentLocation = NavigationManager.Uri;
+
+        NavItems = new List<NavItem>();
+
+        for (int i = 0; i < NavSpecs.Count; i++)
+        {
+            var navSpec = NavSpecs[i];
+
+            var navItem = new NavItem
+            {
+                Id = i,
+                Label = navSpec.Label,
+                IsExpanded = currentLocation.Contains(navSpec.Folder),
+                ClassName = currentLocation.Contains(navSpec.Folder) ? parentClassParentOfActive : parentClassBase
+            };
+
+            foreach (SubNavSpec subNavSpec in navSpec.Children)
+            {
+                var subNavItem = new SubNavItem
+                {
+                    Label = subNavSpec.Label,
+                    LinkTo = subNavSpec.Folder + "0",
+                    IsActive = currentLocation.Contains(subNavSpec.Folder),
+                    ClassName = currentLocation.Contains(subNavSpec.Folder) ? childClassActive :
+                            navItem.IsExpanded ? childClassSiblingOfActive : childClassBase
+                };
+
+                navItem.Children.Add(subNavItem);
+            }
+
+            NavItems.Add(navItem);
+        }
+
+        StateHasChanged();
+
+    }
+
+    public void ToggleNav(int navItemId)
+    {        
+        var item = NavItems.Where(i => i.Id == navItemId).Single();
+
+        if (!item.IsExpanded)
+        {
+            item.IsExpanded = true;
+            item.ClassName = parentClassExpanded;
+
+            foreach (SubNavItem child in item.Children)
+            {
+                child.ClassName = child.IsActive ? childClassActive : childClassExpanded;
+            }
+        }
+        else
+        {
+            item.IsExpanded = false;
+            item.ClassName = parentClassCollapsed;
+
+            foreach (SubNavItem child in item.Children)
+            {
+                child.ClassName = childClassCollapsed;
+            }
+        }        
+
+        StateHasChanged();
+    }
+
+}

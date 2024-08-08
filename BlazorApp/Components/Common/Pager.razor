@@ -1,0 +1,44 @@
+﻿
+<div class="paging-button-container">
+    <a class="paging-button prev-page" href="@ImageFolder/@PrevPage">
+        <span class="fa-solid fa-caret-left"></span>
+        Previous Page
+    </a>
+    <div class="page-counter">Page @CurrentPage of @(Pages.Count - 1)</div>
+    <a class="paging-button next-page" href="@ImageFolder/@NextPage">
+        Next Page
+        <span class="fa-solid fa-caret-right"></span>
+    </a>
+</div>
+
+<img src="/images/@ImageFolder/@Pages[CurrentPage]" alt="comic page" class="comic-page" />
+
+
+
+@code {
+    [Parameter]
+    public string? ImageFolder { get; set; }
+
+    [Parameter]
+    public List<string> Pages { get; set; }
+
+    [Parameter]
+    public int? PageNumber { get; set; }
+
+    public int CurrentPage { get; set; }
+
+    public int PrevPage { get; set; }
+
+    public int NextPage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        CurrentPage = PageNumber.GetValueOrDefault();
+
+        if (CurrentPage == 0) { PrevPage = Pages.Count - 1; }
+        else { PrevPage = CurrentPage - 1; }
+
+        if (CurrentPage == Pages.Count - 1) { NextPage = 0; }
+        else { NextPage = CurrentPage + 1; }
+    }
+ }

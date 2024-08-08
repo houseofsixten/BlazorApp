@@ -1,0 +1,45 @@
+﻿@using BlazorApp.Components.Common
+
+@page "/touhou/autumn/{pagenumberstring}"
+
+<div class="gallery-container">
+
+    <div class="gallery-title-container">
+        <h1 class="gallery-title">Autumn Children</h1>
+    </div>
+
+    <Pager PageNumber="@PageNumberInt" Pages="@Pages" ImageFolder="@ImageFolder"/>
+
+</div>
+
+@code {
+    [Parameter]
+    public string? Pagenumberstring { get; set; }
+
+    public int PageNumberInt { get; set; }
+
+    public List<string> Pages { get; set; }
+
+    public string ImageFolder { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Int32.TryParse(Pagenumberstring, out int pagenumber))
+        {
+            PageNumberInt = pagenumber;
+        }
+        else
+        {
+            PageNumberInt = 0;
+        }
+
+        ImageFolder = "touhou/autumn";
+
+        Pages = new List<string> { "page000.jpg",  "page001.jpg", "page002.jpg", "page003.jpg" , "page004.jpg", "page005.jpg", "page006.jpg", "page007.jpg", "page008.jpg", "page009.jpg",
+                                  "page010.jpg",  "page011.jpg", "page012.jpg", "page013.jpg" , "page014.jpg", "page015.jpg", "page016.jpg", "page017.jpg", "page018.jpg", "page019.jpg",
+                                  "page020.jpg",  "page021.jpg", "page022.jpg", "page023.jpg" , "page024.jpg", "page025.jpg", "page026.jpg", "page027.jpg", "page028.jpg", "page029.jpg",
+                                  "page030.jpg",  "page031.jpg", "page032.jpg", "page033.jpg" , "page034.jpg", "page035.jpg", "page036.jpg", "page037.jpg", "page038.jpg", "page039.jpg",
+                                  "page040.jpg",  "page041.jpg", "page042.jpg", "page043.jpg" , "page044.jpg", "page045.jpg", "page046.jpg", "page047.jpg", "page048.jpg", "page049.jpg",
+                                  "page050.jpg" };
+    }
+}
